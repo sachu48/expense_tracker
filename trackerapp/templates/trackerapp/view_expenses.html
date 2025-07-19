@@ -1,0 +1,9 @@
+<h2>My Expenses</h2>
+<ul>
+    {% for expense in expenses %}
+    <li>{{ expense.date }} - {{ expense.title }} - ₹{{ expense.amount }} ({{ expense.category }})</li>
+    {% empty %}
+    <li>No expenses added yet.</li>
+    {% endfor %}
+</ul>
+<a href="{% url 'add_expense' %}">Add New Expense</a>

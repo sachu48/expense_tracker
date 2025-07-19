@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Expense Tracker</title>
+</head>
+<body>
+    <header>
+        <h1>Welcome to Expense Tracker</h1>
+        {% if user.is_authenticated %}
+            <p>Logged in as {{ user.username }} | <a href="{% url 'logout' %}">Logout</a></p>
+        {% else %}
+            <p><a href="{% url 'login' %}">Login</a> | <a href="{% url 'register' %}">Register</a></p>
+        {% endif %}
+        <hr>
+    </header>
+
+    {% block content %}
+    <!-- Page content will go here -->
+    {% endblock %}
+</body>
+</html>
