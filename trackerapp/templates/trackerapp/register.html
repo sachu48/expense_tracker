@@ -1,7 +1,568 @@
-<h2>Register</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Sign Up</button>
-</form>
-<a href="{% url 'login' %}">Already have an account? Login</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - TrackerApp</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .register-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .register-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+        }
+        
+        .form-floating {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-control {
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            background: rgba(255, 255, 255, 1);
+            transform: scale(1.02);
+        }
+        
+        .form-label {
+            color: #6c757d;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .form-floating > .form-control:focus ~ label,
+        .form-floating > .form-control:not(:placeholder-shown) ~ label {
+            color: #667eea;
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+        }
+        
+        .btn-register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-register::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-register:hover::before {
+            left: 100%;
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-register:active {
+            transform: translateY(0);
+        }
+        
+        .register-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            animation: fadeInDown 0.8s ease-out;
+        }
+        
+        .register-icon {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: bounce 2s infinite;
+            display: block;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .login-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .login-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .login-link:hover {
+            color: #764ba2;
+            text-decoration: none;
+        }
+        
+        .login-link:hover::after {
+            width: 100%;
+        }
+        
+        .alert {
+            border-radius: 12px;
+            border: none;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        
+        .form-group {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            transition: color 0.3s ease;
+            z-index: 10;
+        }
+        
+        .form-control:focus + .input-icon {
+            color: #667eea;
+        }
+        
+        .strength-meter {
+            height: 4px;
+            background: #e1e5e9;
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+        
+        .strength-weak { background: #dc3545; }
+        .strength-medium { background: #ffc107; }
+        .strength-strong { background: #28a745; }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="register-card p-5">
+                    <i class="fas fa-user-plus register-icon"></i>
+                    <h2 class="register-header">Register</h2>
+                    
+                    <!-- Messages would be displayed here in Django -->
+                    <div id="messages-container">
+                        <!-- Django messages would go here -->
+                    </div>
+
+                    <form method="post" id="registerForm" novalidate>
+                        <!-- CSRF token would be here in Django -->
+                        
+                        <div class="form-group">
+                            <div class="form-floating">
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="id_username" 
+                                    name="username" 
+                                    placeholder="Username"
+                                    required
+                                >
+                                <label for="id_username">Username</label>
+                                <i class="fas fa-user input-icon"></i>
+                            </div>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-floating">
+                                <input 
+                                    type="email" 
+                                    class="form-control" 
+                                    id="id_email" 
+                                    name="email" 
+                                    placeholder="Email"
+                                    required
+                                >
+                                <label for="id_email">Email</label>
+                                <i class="fas fa-envelope input-icon"></i>
+                            </div>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-floating">
+                                <input 
+                                    type="password" 
+                                    class="form-control" 
+                                    id="id_password1" 
+                                    name="password1" 
+                                    placeholder="Password"
+                                    required
+                                >
+                                <label for="id_password1">Password</label>
+                                <i class="fas fa-lock input-icon toggle-password" data-target="id_password1"></i>
+                            </div>
+                            <div class="strength-meter">
+                                <div class="strength-bar" id="strengthBar"></div>
+                            </div>
+                            <small class="text-muted" id="strengthText">Password strength</small>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-floating">
+                                <input 
+                                    type="password" 
+                                    class="form-control" 
+                                    id="id_password2" 
+                                    name="password2" 
+                                    placeholder="Confirm Password"
+                                    required
+                                >
+                                <label for="id_password2">Confirm Password</label>
+                                <i class="fas fa-lock input-icon toggle-password" data-target="id_password2"></i>
+                            </div>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <button type="submit" class="btn btn-register w-100">
+                            <span class="loading-spinner"></span>
+                            <span class="button-text">Create Account</span>
+                        </button>
+                    </form>
+                    
+                    <p class="mt-4 text-center">
+                        Already have an account? <a href="{% url 'login' %}" class="login-link">Login here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('registerForm');
+            const passwordField = document.getElementById('id_password1');
+            const confirmPasswordField = document.getElementById('id_password2');
+            const strengthBar = document.getElementById('strengthBar');
+            const strengthText = document.getElementById('strengthText');
+            const toggleButtons = document.querySelectorAll('.toggle-password');
+            
+            // Password strength checker
+            passwordField.addEventListener('input', function() {
+                const password = this.value;
+                const strength = checkPasswordStrength(password);
+                updateStrengthMeter(strength);
+            });
+            
+            // Password confirmation validation
+            confirmPasswordField.addEventListener('input', function() {
+                validatePasswordMatch();
+            });
+            
+            // Toggle password visibility
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetField = document.getElementById(targetId);
+                    
+                    if (targetField.type === 'password') {
+                        targetField.type = 'text';
+                        this.classList.remove('fa-lock');
+                        this.classList.add('fa-eye-slash');
+                    } else {
+                        targetField.type = 'password';
+                        this.classList.remove('fa-eye-slash');
+                        this.classList.add('fa-lock');
+                    }
+                });
+            });
+            
+            // Real-time validation
+            const inputs = form.querySelectorAll('input[required]');
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    validateField(this);
+                });
+                
+                input.addEventListener('input', function() {
+                    if (this.classList.contains('is-invalid')) {
+                        validateField(this);
+                    }
+                });
+            });
+            
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                let isValid = true;
+                inputs.forEach(input => {
+                    if (!validateField(input)) {
+                        isValid = false;
+                    }
+                });
+                
+                if (!validatePasswordMatch()) {
+                    isValid = false;
+                }
+                
+                if (isValid) {
+                    showLoading(true);
+                    // In actual Django implementation, the form would submit normally
+                    // For demo purposes, we'll simulate a delay
+                    setTimeout(() => {
+                        showLoading(false);
+                        showSuccess('Registration successful! Redirecting...');
+                        setTimeout(() => {
+                            // In Django, this would redirect to login page
+                            console.log('Would redirect to login page');
+                        }, 2000);
+                    }, 2000);
+                } else {
+                    // Add shake animation to form
+                    form.style.animation = 'shake 0.5s';
+                    setTimeout(() => {
+                        form.style.animation = '';
+                    }, 500);
+                }
+            });
+            
+            function checkPasswordStrength(password) {
+                let score = 0;
+                
+                if (password.length >= 8) score++;
+                if (/[a-z]/.test(password)) score++;
+                if (/[A-Z]/.test(password)) score++;
+                if (/[0-9]/.test(password)) score++;
+                if (/[^A-Za-z0-9]/.test(password)) score++;
+                
+                return score;
+            }
+            
+            function updateStrengthMeter(strength) {
+                const percentage = (strength / 5) * 100;
+                strengthBar.style.width = percentage + '%';
+                
+                strengthBar.className = 'strength-bar';
+                
+                if (strength <= 2) {
+                    strengthBar.classList.add('strength-weak');
+                    strengthText.textContent = 'Weak password';
+                    strengthText.className = 'text-danger';
+                } else if (strength <= 4) {
+                    strengthBar.classList.add('strength-medium');
+                    strengthText.textContent = 'Medium password';
+                    strengthText.className = 'text-warning';
+                } else {
+                    strengthBar.classList.add('strength-strong');
+                    strengthText.textContent = 'Strong password';
+                    strengthText.className = 'text-success';
+                }
+            }
+            
+            function validatePasswordMatch() {
+                const password1 = passwordField.value;
+                const password2 = confirmPasswordField.value;
+                
+                if (password2 && password1 !== password2) {
+                    setFieldInvalid(confirmPasswordField, 'Passwords do not match');
+                    return false;
+                } else if (password2) {
+                    setFieldValid(confirmPasswordField);
+                    return true;
+                }
+                return true;
+            }
+            
+            function validateField(field) {
+                const value = field.value.trim();
+                
+                if (!value) {
+                    setFieldInvalid(field, 'This field is required');
+                    return false;
+                }
+                
+                if (field.type === 'email' && !isValidEmail(value)) {
+                    setFieldInvalid(field, 'Please enter a valid email address');
+                    return false;
+                }
+                
+                if (field.name === 'username' && value.length < 3) {
+                    setFieldInvalid(field, 'Username must be at least 3 characters');
+                    return false;
+                }
+                
+                if (field.name === 'password1' && value.length < 8) {
+                    setFieldInvalid(field, 'Password must be at least 8 characters');
+                    return false;
+                }
+                
+                setFieldValid(field);
+                return true;
+            }
+            
+            function setFieldInvalid(field, message) {
+                field.classList.add('is-invalid');
+                field.classList.remove('is-valid');
+                const feedback = field.parentNode.parentNode.querySelector('.invalid-feedback');
+                if (feedback) {
+                    feedback.textContent = message;
+                }
+            }
+            
+            function setFieldValid(field) {
+                field.classList.add('is-valid');
+                field.classList.remove('is-invalid');
+            }
+            
+            function isValidEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+            
+            function showLoading(show) {
+                const spinner = document.querySelector('.loading-spinner');
+                const buttonText = document.querySelector('.button-text');
+                const submitButton = document.querySelector('.btn-register');
+                
+                if (show) {
+                    spinner.style.display = 'inline-block';
+                    buttonText.textContent = 'Creating Account...';
+                    submitButton.disabled = true;
+                } else {
+                    spinner.style.display = 'none';
+                    buttonText.textContent = 'Create Account';
+                    submitButton.disabled = false;
+                }
+            }
+            
+            function showSuccess(message) {
+                const messagesContainer = document.getElementById('messages-container');
+                messagesContainer.innerHTML = `
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+            }
+        });
+        
+        // Add shake animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

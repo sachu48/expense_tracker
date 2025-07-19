@@ -1,0 +1,51 @@
+{% extends "trackerapp/base.html" %}
+
+{% block content %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+    <a class="navbar-brand" href="/">💰 Expense Tracker</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" 
+            aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
+        <ul class="navbar-nav align-items-center">
+            {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="btn btn-success me-2" href="{% url 'add_expense' %}">➕ Add Expense</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-primary me-2" href="{% url 'view_expenses' %}">📋 View Expenses</a>
+                </li>
+                <li class="nav-item">
+                    <form method="post" action="{% url 'logout' %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">🚪 Logout ({{ user.username }})</button>
+                    </form>
+                </li>
+            {% else %}
+                <li class="nav-item me-2">
+                    <a class="btn btn-outline-light" href="{% url 'login' %}">🔐 Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-outline-light" href="{% url 'register' %}">📝 Register</a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% block layout_content %}
+    {% endblock %}
+</div>
+{% endblock %}

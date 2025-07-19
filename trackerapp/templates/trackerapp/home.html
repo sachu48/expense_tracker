@@ -1,8 +1,461 @@
-<html>
-    <head>
-        Home Page
-    </head>
-    <body>
-    <h1>Expense Tracker</h1>
-    </body>
-</html>
+{% extends "trackerapp/layout.html" %}
+
+{% block layout_content %}
+<style>
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    @keyframes shimmer {
+        0% { background-position: -200px 0; }
+        100% { background-position: 200px 0; }
+    }
+    
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 4rem 0;
+        margin: -2rem -15px 2rem -15px;
+        border-radius: 0 0 2rem 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        animation: shimmer 3s infinite;
+    }
+    
+    .hero-content {
+        animation: fadeInUp 1s ease-out;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .hero-subtitle {
+        font-size: 1.3rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+    
+    .floating-emoji {
+        font-size: 3rem;
+        animation: float 3s ease-in-out infinite;
+        margin: 0 1rem;
+    }
+    
+    .action-buttons {
+        animation: fadeInUp 1s ease-out 0.3s both;
+    }
+    
+    .btn-modern {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 2rem;
+        border: none;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateY(0);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    
+    .btn-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+    
+    .btn-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-modern:hover::before {
+        left: 100%;
+    }
+    
+    .btn-primary-modern {
+        background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        color: white;
+    }
+    
+    .btn-success-modern {
+        background: linear-gradient(45deg, #51cf66, #40c057);
+        color: white;
+    }
+    
+    .btn-outline-modern {
+        background: rgba(255,255,255,0.1);
+        border: 2px solid rgba(255,255,255,0.3);
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+    
+    .btn-outline-modern:hover {
+        background: rgba(255,255,255,0.2);
+        border-color: rgba(255,255,255,0.5);
+        color: white;
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, #f8f9ff 0%, #e6f3ff 100%);
+        border: none;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: fadeInUp 1s ease-out 0.6s both;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+        border-radius: 1.5rem;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+    
+    .stats-card:hover::before {
+        opacity: 1;
+    }
+    
+    .card-header-modern {
+        background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+        color: white;
+        border: none;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card-header-modern::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+    
+    .card-header-modern h5 {
+        margin: 0;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .chart-container {
+        padding: 2rem;
+        position: relative;
+    }
+    
+    .chart-container::before {
+        content: '';
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        right: 1rem;
+        bottom: 1rem;
+        background: linear-gradient(45deg, transparent 30%, rgba(102, 126, 234, 0.05) 50%, transparent 70%);
+        border-radius: 1rem;
+        pointer-events: none;
+    }
+    
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin: 3rem 0;
+    }
+    
+    .feature-card {
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(20px);
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(255,255,255,0.2);
+        animation: fadeInUp 1s ease-out var(--delay, 0s) both;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+    
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        animation: pulse 2s infinite;
+    }
+    
+    .login-section {
+        animation: fadeInUp 1s ease-out 0.4s both;
+    }
+    
+    .container-modern {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .hero-title { font-size: 2.5rem; }
+        .hero-subtitle { font-size: 1.1rem; }
+        .btn-modern { padding: 0.75rem 1.5rem; font-size: 1rem; }
+        .floating-emoji { font-size: 2rem; }
+    }
+</style>
+
+<div class="container-modern">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="hero-content text-center">
+                <div class="mb-4">
+                    <span class="floating-emoji" style="animation-delay: 0s;">💰</span>
+                    <span class="floating-emoji" style="animation-delay: 0.5s;">📊</span>
+                    <span class="floating-emoji" style="animation-delay: 1s;">💳</span>
+                </div>
+                <h1 class="hero-title">Expense Tracker</h1>
+                <p class="hero-subtitle">Transform your financial habits with intelligent expense tracking and beautiful insights</p>
+            </div>
+        </div>
+    </div>
+
+    {% if user.is_authenticated %}
+    <!-- Action Buttons -->
+    <div class="action-buttons text-center mb-5">
+        <a href="{% url 'add_expense' %}" class="btn btn-modern btn-primary-modern me-3 mb-2">
+            ➕ Add New Expense
+        </a>
+        <a href="{% url 'view_expenses' %}" class="btn btn-modern btn-success-modern mb-2">
+            📋 View All Expenses
+        </a>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="feature-grid">
+        <div class="feature-card" style="--delay: 0.2s;">
+            <div class="feature-icon">🎯</div>
+            <h4>Smart Tracking</h4>
+            <p>Automatically categorize and analyze your spending patterns</p>
+        </div>
+        <div class="feature-card" style="--delay: 0.4s;">
+            <div class="feature-icon">📈</div>
+            <h4>Visual Insights</h4>
+            <p>Beautiful charts and graphs to understand your finances</p>
+        </div>
+        <div class="feature-card" style="--delay: 0.6s;">
+            <div class="feature-icon">⚡</div>
+            <h4>Quick Entry</h4>
+            <p>Add expenses in seconds with our intuitive interface</p>
+        </div>
+    </div>
+
+    <!-- Enhanced Expense Chart -->
+    <div class="stats-card">
+        <div class="card-header-modern">
+            <h5>📊 Your Expense Breakdown by Category</h5>
+        </div>
+        <div class="chart-container">
+            <canvas id="expenseChart" height="300"></canvas>
+        </div>
+    </div>
+    
+    {% else %}
+    <!-- Login Section -->
+    <div class="login-section text-center mt-5">
+        <div class="hero-section" style="margin: 0; padding: 3rem 0;">
+            <h3 class="mb-4">Join thousands of users managing their finances smarter</h3>
+            <a href="{% url 'login' %}" class="btn btn-modern btn-outline-modern me-3 mb-2">
+                🔐 Login to Your Account
+            </a>
+            <a href="{% url 'register' %}" class="btn btn-modern btn-outline-modern mb-2">
+                📝 Create New Account
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Enhanced Chart Configuration
+    const ctx = document.getElementById('expenseChart').getContext('2d');
+    
+    // Create gradient backgrounds
+    const gradientColors = [
+        ctx.createLinearGradient(0, 0, 0, 400),
+        ctx.createLinearGradient(0, 0, 0, 400),
+        ctx.createLinearGradient(0, 0, 0, 400),
+        ctx.createLinearGradient(0, 0, 0, 400),
+        ctx.createLinearGradient(0, 0, 0, 400),
+        ctx.createLinearGradient(0, 0, 0, 400)
+    ];
+    
+    // Define gradient stops
+    const colorStops = [
+        ['#667eea', '#764ba2'],
+        ['#f093fb', '#f5576c'],
+        ['#4facfe', '#00f2fe'],
+        ['#43e97b', '#38f9d7'],
+        ['#fa709a', '#fee140'],
+        ['#a8edea', '#fed6e3']
+    ];
+    
+    gradientColors.forEach((gradient, index) => {
+        gradient.addColorStop(0, colorStops[index][0]);
+        gradient.addColorStop(1, colorStops[index][1]);
+    });
+    
+    const expenseChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ labels|safe }},
+            datasets: [{
+                label: 'Expenses by Category',
+                data: {{ data|safe }},
+                backgroundColor: gradientColors,
+                borderColor: '#ffffff',
+                borderWidth: 3,
+                hoverBorderWidth: 5,
+                hoverBorderColor: '#ffffff',
+                cutout: '60%'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        font: {
+                            size: 14,
+                            weight: '500'
+                        },
+                        color: '#2d3748'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(45, 55, 72, 0.9)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    borderColor: '#667eea',
+                    borderWidth: 1,
+                    cornerRadius: 10,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: $${value.toFixed(2)} (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            animation: {
+                animateRotate: true,
+                animateScale: true,
+                duration: 1500,
+                easing: 'easeInOutQuart'
+            },
+            elements: {
+                arc: {
+                    hoverBackgroundColor: function(context) {
+                        return context.element.options.backgroundColor;
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        }
+    });
+    
+    // Add chart animation on scroll
+    const chartCard = document.querySelector('.stats-card');
+    const observerOptions = {
+        threshold: 0.3,
+        rootMargin: '0px 0px -100px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                expenseChart.update('active');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    if (chartCard) {
+        observer.observe(chartCard);
+    }
+    
+    // Add hover effects to feature cards
+    document.querySelectorAll('.feature-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.background = 'rgba(255,255,255,0.9)';
+        });
+    });
+</script>
+{% endblock %}
