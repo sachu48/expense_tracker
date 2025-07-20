@@ -13,5 +13,5 @@ urlpatterns = [
     path('add-expense/', views.add_expense, name='add_expense'),
   
     path('view-expenses/', views.view_expenses, name='view_expenses'),
-
+    path('add-income/', views.add_monthly_income, name='add_monthly_income'),
 ]

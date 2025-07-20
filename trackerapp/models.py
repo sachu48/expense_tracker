@@ -13,3 +13,11 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.amount}"
+    
+class MonthlyIncome(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    income = models.DecimalField(max_digits=10, decimal_places=2)
+    month = models.DateField()  # Stored as YYYY-MM-01
+
+    def __str__(self):
+        return f"{self.user.username} - {self.month.strftime('%B %Y')} - ₹{self.income}"

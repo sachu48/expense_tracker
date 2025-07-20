@@ -8,6 +8,9 @@ from django import forms
 from django.db.models import Sum
 from django.utils import timezone
 from datetime import timedelta
+from .models import MonthlyIncome
+from .forms import MonthlyIncomeForm
+from datetime import date
 
 
 @login_required
@@ -20,10 +23,27 @@ def home(request):
     labels = [entry['category'] for entry in category_data]
     data = [float(entry['total']) for entry in category_data]
 
+    today = timezone.now().date()
+    month_start = date(today.year, today.month, 1)
+
+    # Fetch Monthly Income
+    income_entry = MonthlyIncome.objects.filter(user=request.user, month=month_start).first()
+    monthly_income = float(income_entry.income) if income_entry else 0
+
+    # Calculate current month's expenses
+    monthly_expense = Expense.objects.filter(
+        user=request.user,
+        date__year=today.year,
+        date__month=today.month
+    ).aggregate(Sum('amount'))['amount__sum'] or 0
+
     return render(request, 'trackerapp/home.html', {
         'labels': labels,
         'data': data,
+        'monthly_income': monthly_income,
+        'monthly_expense': float(monthly_expense),
     })
+
 
 def register(request):
     if request.method == 'POST':
@@ -36,10 +56,10 @@ def register(request):
         form = UserCreationForm()
     return render(request, 'trackerapp/register.html', {'form': form})
 
-class ExpenseForm(forms.ModelForm):
-    class Meta:
-        model = Expense
-        fields = ['title', 'amount', 'category', 'date', 'description']
+#class ExpenseForm(forms.ModelForm):
+ #   class Meta:
+  #      model = Expense
+   #     fields = ['title', 'amount', 'category', 'date', 'description']
 
 @login_required
 def add_expense(request):
@@ -77,10 +97,9 @@ def view_expenses(request):
     if start_date and end_date:
         expenses = expenses.filter(date__range=[start_date, end_date])
 
-    # Calculate total based on filtered queryset
+    # Totals for filtered and fixed ranges
     filtered_total = expenses.aggregate(Sum('amount'))['amount__sum'] or 0
 
-    # Default totals (unfiltered)
     today = timezone.now().date()
     start_of_week = today - timedelta(days=today.weekday())
     start_of_month = today.replace(day=1)
@@ -88,6 +107,11 @@ def view_expenses(request):
     weekly_total = Expense.objects.filter(user=request.user, date__gte=start_of_week).aggregate(Sum('amount'))['amount__sum'] or 0
     monthly_total = Expense.objects.filter(user=request.user, date__gte=start_of_month).aggregate(Sum('amount'))['amount__sum'] or 0
     overall_total = Expense.objects.filter(user=request.user).aggregate(Sum('amount'))['amount__sum'] or 0
+
+    # Income Calculations
+    total_income = MonthlyIncome.objects.filter(user=request.user).aggregate(Sum('income'))['income__sum'] or 0
+
+    balance = total_income - overall_total  # Remaining balance
 
     categories = Expense.objects.filter(user=request.user).values_list('category', flat=True).distinct()
 
@@ -97,9 +121,38 @@ def view_expenses(request):
         'weekly_total': weekly_total,
         'monthly_total': monthly_total,
         'overall_total': overall_total,
+        'total_income': total_income,
+        'balance': balance,
         'categories': categories,
         'selected_category': selected_category,
         'start_date': start_date,
         'end_date': end_date,
     }
     return render(request, 'trackerapp/view_expenses.html', context)
+
+@login_required
+def add_monthly_income(request):
+    if request.method == 'POST':
+        form = MonthlyIncomeForm(request.POST)
+        if form.is_valid():
+            income = form.cleaned_data['income']
+            month_str = form.cleaned_data['month']  # e.g., "2025-07"
+            try:
+                # Convert to full date YYYY-MM-01
+                month_date = datetime.strptime(month_str, "%Y-%m").date()
+            except ValueError:
+                messages.error(request, "Invalid month format.")
+                return redirect('add_monthly_income')
+
+            # Create or update income for that month
+            obj, created = MonthlyIncome.objects.update_or_create(
+                user=request.user,
+                month=month_date,
+                defaults={'income': income}
+            )
+            messages.success(request, "Monthly income saved successfully.")
+            return redirect('home')
+    else:
+        form = MonthlyIncomeForm()
+
+    return render(request, 'trackerapp/add_income.html', {'form': form})

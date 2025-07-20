@@ -2,7 +2,10 @@
 
 {% block content %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
-    <a class="navbar-brand" href="/">💰 Expense Tracker</a>
+    <a class="navbar-brand d-flex align-items-center" href="/">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Expense Tracker" width="32" height="32" class="me-2">
+        Expense Tracker
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" 
             aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -11,25 +14,52 @@
     <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
         <ul class="navbar-nav align-items-center">
             {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="btn btn-success me-2" href="{% url 'add_expense' %}">➕ Add Expense</a>
-                </li>
-                <li class="nav-item">
-                    <a class="btn btn-primary me-2" href="{% url 'view_expenses' %}">📋 View Expenses</a>
-                </li>
-                <li class="nav-item">
-                    <form method="post" action="{% url 'logout' %}" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">🚪 Logout ({{ user.username }})</button>
-                    </form>
-                </li>
+            <li class="nav-item">
+                <a class="btn btn-outline-light me-2" href="{% url 'home' %}">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" alt="Home" width="16" height="16" class="me-1">
+                    Home
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="btn btn-success me-2" href="{% url 'add_monthly_income' %}">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1828/1828817.png" alt="Add Income" width="16" height="16" class="me-1">
+                    Add Income
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="btn btn-danger me-2" href="{% url 'add_expense' %}">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1828/1828843.png" alt="Add Expense" width="16" height="16" class="me-1">
+                    Add Expense
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="btn btn-primary me-2" href="{% url 'view_expenses' %}">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2921/2921222.png" alt="View Expenses" width="16" height="16" class="me-1">
+                    View Expenses
+                </a>
+            </li>
+            <li class="nav-item">
+                <form method="post" action="{% url 'logout' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828490.png" alt="Logout" width="16" height="16" class="me-1">
+                        Logout ({{ user.username }})
+                    </button>
+                </form>
+            </li>
             {% else %}
-                <li class="nav-item me-2">
-                    <a class="btn btn-outline-light" href="{% url 'login' %}">🔐 Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="btn btn-outline-light" href="{% url 'register' %}">📝 Register</a>
-                </li>
+            <li class="nav-item me-2">
+                <a class="btn btn-outline-light" href="{% url 'login' %}">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1828/1828395.png" alt="Login" width="16" height="16" class="me-1">
+                    Login
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="btn btn-outline-light" href="{% url 'register' %}">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="Register" width="16" height="16" class="me-1">
+                    Register
+                </a>
+            </li>
             {% endif %}
         </ul>
     </div>
@@ -48,4 +78,14 @@
     {% block layout_content %}
     {% endblock %}
 </div>
+
+<style>
+    .navbar-brand img {
+        filter: brightness(0) invert(1); /* Makes icons white for dark navbar */
+    }
+    
+    .btn img {
+        vertical-align: text-bottom;
+    }
+</style>
 {% endblock %}
